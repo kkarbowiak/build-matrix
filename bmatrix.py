@@ -6,8 +6,12 @@ import subprocess
 def main():
     args = parse_args()
 
-    for compiler in args.compiler:
-        for build_type in args.type:
+    build_matrix(args.compiler, args.type)
+
+
+def build_matrix(compilers, build_types):
+    for compiler in compilers:
+        for build_type in build_types:
             build_dir = create_dir(compiler, build_type)
             run_cmake_configure(compiler, build_type, build_dir)
             run_cmake_build(build_dir)
