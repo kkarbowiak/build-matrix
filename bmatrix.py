@@ -25,10 +25,14 @@ def main():
 def build_matrix(options):
     for compiler in options.compilers:
         for build_type in options.build_types:
-            build_dir = create_dir(options.build_dir, compiler, build_type)
-            run_cmake_configure(compiler, build_type, options.source_dir, build_dir, options.quiet)
-            run_cmake_build(build_dir, options.target, options.quiet)
-            run_post_build_commands(build_dir, options.post_build_cmds)
+            process(compiler, build_type, options)
+
+
+def process(compiler, build_type, options):
+    build_dir = create_dir(options.build_dir, compiler, build_type)
+    run_cmake_configure(compiler, build_type, options.source_dir, build_dir, options.quiet)
+    run_cmake_build(build_dir, options.target, options.quiet)
+    run_post_build_commands(build_dir, options.post_build_cmds)
 
 
 def run_cmake_configure(compiler, build_type, source_dir, build_dir, quiet):
