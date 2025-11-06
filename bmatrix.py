@@ -59,19 +59,25 @@ def run_post_build_commands(build_dir, post_build_cmds):
 
 
 def get_c_compiler(compiler):
-    match compiler:
-        case 'gcc' | 'g++':
-            return 'gcc'
-        case 'clang' | 'clang++':
-            return 'clang'
+    if compiler.startswith('gcc'):
+        return compiler
+    elif compiler.startswith('g++'):
+        return compiler.replace('g++', 'gcc')
+    elif compiler.startswith('clang'):
+        return compiler
+    elif compiler.startswith('clang++'):
+        return compiler.replace('clang++', 'clang')
 
 
 def get_cxx_compiler(compiler):
-    match compiler:
-        case 'gcc' | 'g++':
-            return 'g++'
-        case 'clang' | 'clang++':
-            return 'clang++'
+    if compiler.startswith('gcc'):
+        return compiler.replace('gcc', 'g++')
+    elif compiler.startswith('g++'):
+        return compiler
+    elif compiler.startswith('clang'):
+        return compiler.replace('clang', 'clang++')
+    elif compiler.startswith('clang++'):
+        return compiler
 
 
 def create_dir(build_base_dir, compiler, build_type):
