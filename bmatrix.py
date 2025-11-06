@@ -11,6 +11,7 @@ class Options:
     source_dir: str
     build_dir: str
     target: str
+    quiet: bool
     post_build_cmds: list[str]
 
 
@@ -25,24 +26,26 @@ def build_matrix(options):
     for compiler in options.compilers:
         for build_type in options.build_types:
             build_dir = create_dir(options.build_dir, compiler, build_type)
-            run_cmake_configure(compiler, build_type, options.source_dir, build_dir)
-            run_cmake_build(build_dir, options.target)
+            run_cmake_configure(compiler, build_type, options.source_dir, build_dir, options.quiet)
+            run_cmake_build(build_dir, options.target, options.quiet)
             run_post_build_commands(build_dir, options.post_build_cmds)
 
 
-def run_cmake_configure(compiler, build_type, source_dir, build_dir):
+def run_cmake_configure(compiler, build_type, source_dir, build_dir, quiet):
     cmake_cfg_cmd = f'cmake -S {source_dir} -B {build_dir} ' \
         f'-DCMAKE_C_COMPILER={get_c_compiler(compiler)} ' \
         f'-DCMAKE_CXX_COMPILER={get_cxx_compiler(compiler)} '\
         f'-DCMAKE_BUILD_TYPE={build_type.capitalize()}'
-    subprocess.run(cmake_cfg_cmd.split(), check=True)
+    redirect = subprocess.DEVNULL if quiet else None
+    subprocess.run(cmake_cfg_cmd.split(), check=True, stdout=redirect)
 
 
-def run_cmake_build(build_dir, target):
+def run_cmake_build(build_dir, target, quiet):
     cmake_build_cmd = f'cmake --build {build_dir} -j 8'
     if target:
         cmake_build_cmd += f' --target {target}'
-    subprocess.run(cmake_build_cmd.split(), check=True)
+    redirect = subprocess.DEVNULL if quiet else None
+    subprocess.run(cmake_build_cmd.split(), check=True, stdout=redirect)
 
 
 def run_post_build_commands(build_dir, post_build_cmds):
@@ -79,6 +82,7 @@ def get_args_parser():
     parser.add_argument('--source-dir', help='source directory', default='.')
     parser.add_argument('--build-dir', help='build directory', default='build')
     parser.add_argument('--target', help='build target')
+    parser.add_argument('--quiet', action='store_true', help='suppress configure and build output')
     parser.add_argument('--post-build-cmd', nargs='+', help='list of commands to run after build', default=[])
     return parser
 
@@ -91,6 +95,7 @@ def parse_args(parser):
         source_dir=args.source_dir,
         build_dir=args.build_dir,
         target=args.target,
+        quiet=args.quiet,
         post_build_cmds=args.post_build_cmd
     )
 
