@@ -6,19 +6,19 @@ import subprocess
 def main():
     args = parse_args()
 
-    build_matrix(args.compiler, args.type)
+    build_matrix(args.compiler, args.type, args.source_dir)
 
 
-def build_matrix(compilers, build_types):
+def build_matrix(compilers, build_types, source_dir):
     for compiler in compilers:
         for build_type in build_types:
             build_dir = create_dir(compiler, build_type)
-            run_cmake_configure(compiler, build_type, build_dir)
+            run_cmake_configure(compiler, build_type, source_dir, build_dir)
             run_cmake_build(build_dir)
 
 
-def run_cmake_configure(compiler, build_type, build_dir):
-    cmake_cfg_cmd = f'cmake -S . -B {build_dir} ' \
+def run_cmake_configure(compiler, build_type, source_dir, build_dir):
+    cmake_cfg_cmd = f'cmake -S {source_dir} -B {build_dir} ' \
         f'-DCMAKE_C_COMPILER={get_c_compiler(compiler)} ' \
         f'-DCMAKE_CXX_COMPILER={get_cxx_compiler(compiler)} '\
         f'-DCMAKE_BUILD_TYPE={build_type.capitalize()}'
@@ -56,6 +56,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--compiler', nargs='+', help='list of compilers to use')
     parser.add_argument('--type', nargs='+', help='list of build types')
+    parser.add_argument('--source-dir', help='source directory', default='.')
     return parser.parse_args()
 
 
