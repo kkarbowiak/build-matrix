@@ -12,10 +12,10 @@ For example, to build some project with both gcc and clang in both debug and rel
 python3 bmatrix.py --compiler clang gcc --type debug release --source-dir <src> --build-dir <bld>
 ```
 where:
- * <src> is the source directory
- * <bld> is the target build directory
+ * `<src>` is the source directory
+ * `<bld>` is the target build directory
 
-The script will run CMake to configure and then build the project, placing the output in subdirectories of <bld>, e.g.
+The script will run CMake to configure and then build the project, placing the output in subdirectories of `<bld>`, e.g.
 ```
  <bld>
    + build-gcc-debug
