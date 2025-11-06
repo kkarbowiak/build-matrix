@@ -6,13 +6,13 @@ import subprocess
 def main():
     args = parse_args()
 
-    build_matrix(args.compiler, args.type, args.source_dir)
+    build_matrix(args.compiler, args.type, args.source_dir, args.build_dir)
 
 
-def build_matrix(compilers, build_types, source_dir):
+def build_matrix(compilers, build_types, source_dir, build_base_dir):
     for compiler in compilers:
         for build_type in build_types:
-            build_dir = create_dir(compiler, build_type)
+            build_dir = create_dir(build_base_dir, compiler, build_type)
             run_cmake_configure(compiler, build_type, source_dir, build_dir)
             run_cmake_build(build_dir)
 
@@ -46,9 +46,9 @@ def get_cxx_compiler(compiler):
             return 'clang++'
 
 
-def create_dir(compiler, build_type):
-    build_dir = Path(f'build-{compiler}-{build_type.lower()}')
-    build_dir.mkdir(exist_ok=True)
+def create_dir(build_base_dir, compiler, build_type):
+    build_dir = Path(build_base_dir) / f'build-{compiler}-{build_type.lower()}'
+    build_dir.mkdir(parents=True, exist_ok=True)
     return build_dir
 
 
@@ -57,6 +57,7 @@ def parse_args():
     parser.add_argument('--compiler', nargs='+', help='list of compilers to use')
     parser.add_argument('--type', nargs='+', help='list of build types')
     parser.add_argument('--source-dir', help='source directory', default='.')
+    parser.add_argument('--build-dir', help='build directory', default='build')
     return parser.parse_args()
 
 
