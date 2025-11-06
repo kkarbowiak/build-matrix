@@ -1,21 +1,33 @@
 import argparse
+from dataclasses import dataclass
 from pathlib import Path
 import subprocess
 
 
+@dataclass
+class Options:
+    compilers: list[str]
+    build_types: list[str]
+    source_dir: str
+    build_dir: str
+    target: str
+    post_build_cmds: list[str]
+
+
 def main():
-    args = parse_args()
+    parser = get_args_parser()
+    options = parse_args(parser)
 
-    build_matrix(args.compiler, args.type, args.source_dir, args.build_dir, args.target, args.post_build_cmd)
+    build_matrix(options)
 
 
-def build_matrix(compilers, build_types, source_dir, build_base_dir, target, post_build_cmds):
-    for compiler in compilers:
-        for build_type in build_types:
-            build_dir = create_dir(build_base_dir, compiler, build_type)
-            run_cmake_configure(compiler, build_type, source_dir, build_dir)
-            run_cmake_build(build_dir, target)
-            run_post_build_commands(build_dir, post_build_cmds)
+def build_matrix(options):
+    for compiler in options.compilers:
+        for build_type in options.build_types:
+            build_dir = create_dir(options.build_dir, compiler, build_type)
+            run_cmake_configure(compiler, build_type, options.source_dir, build_dir)
+            run_cmake_build(build_dir, options.target)
+            run_post_build_commands(build_dir, options.post_build_cmds)
 
 
 def run_cmake_configure(compiler, build_type, source_dir, build_dir):
@@ -60,7 +72,7 @@ def create_dir(build_base_dir, compiler, build_type):
     return build_dir
 
 
-def parse_args():
+def get_args_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('--compiler', nargs='+', help='list of compilers to use')
     parser.add_argument('--type', nargs='+', help='list of build types')
@@ -68,7 +80,19 @@ def parse_args():
     parser.add_argument('--build-dir', help='build directory', default='build')
     parser.add_argument('--target', help='build target')
     parser.add_argument('--post-build-cmd', nargs='+', help='list of commands to run after build', default=[])
-    return parser.parse_args()
+    return parser
+
+
+def parse_args(parser):
+    args = parser.parse_args()
+    return Options(
+        compilers=args.compiler,
+        build_types=args.type,
+        source_dir=args.source_dir,
+        build_dir=args.build_dir,
+        target=args.target,
+        post_build_cmds=args.post_build_cmd
+    )
 
 
 if __name__ == '__main__':
