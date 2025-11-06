@@ -29,8 +29,8 @@ def build_matrix(options):
 
 
 def process(compiler, build_type, options):
-    print(f'Building with {compiler} in {build_type} mode...')
     build_dir = create_dir(options.build_dir, compiler, build_type)
+    print(f'Building with {compiler} in {build_type} mode in {build_dir} ...')
     run_cmake_configure(compiler, build_type, options.source_dir, build_dir, options.quiet)
     run_cmake_build(build_dir, options.target, options.quiet)
     run_post_build_commands(build_dir, options.post_build_cmds)
