@@ -8,15 +8,22 @@ def main():
 
     for compiler in args.compiler:
         for type in args.type:
-            build_dir = Path(f'build-{compiler}-{type.lower()}')
-            build_dir.mkdir(exist_ok=True)
-            cmake_cfg_cmd = f'cmake -S . -B {build_dir} ' \
-                        f'-DCMAKE_C_COMPILER={get_c_compiler(compiler)} ' \
-                        f'-DCMAKE_CXX_COMPILER={get_cxx_compiler(compiler)} '\
-                        f'-DCMAKE_BUILD_TYPE={type.capitalize()}'
-            subprocess.run(cmake_cfg_cmd.split(), check=True)
-            cmake_build_cmd = f'cmake --build {build_dir} -j'
-            subprocess.run(cmake_build_cmd.split(), check=True)
+            build_dir = create_dir(compiler, type)
+            run_cmake_configure(compiler, type, build_dir)
+            run_cmake_build(build_dir)
+
+
+def run_cmake_configure(compiler, type, build_dir):
+    cmake_cfg_cmd = f'cmake -S . -B {build_dir} ' \
+        f'-DCMAKE_C_COMPILER={get_c_compiler(compiler)} ' \
+        f'-DCMAKE_CXX_COMPILER={get_cxx_compiler(compiler)} '\
+        f'-DCMAKE_BUILD_TYPE={type.capitalize()}'
+    subprocess.run(cmake_cfg_cmd.split(), check=True)
+
+
+def run_cmake_build(build_dir):
+    cmake_build_cmd = f'cmake --build {build_dir} -j 8'
+    subprocess.run(cmake_build_cmd.split(), check=True)
 
 
 def get_c_compiler(compiler):
@@ -33,6 +40,12 @@ def get_cxx_compiler(compiler):
             return 'g++'
         case 'clang' | 'clang++':
             return 'clang++'
+
+
+def create_dir(compiler, type):
+    build_dir = Path(f'build-{compiler}-{type.lower()}')
+    build_dir.mkdir(exist_ok=True)
+    return build_dir
 
 
 def parse_args():
