@@ -6,15 +6,16 @@ import subprocess
 def main():
     args = parse_args()
 
-    build_matrix(args.compiler, args.type, args.source_dir, args.build_dir)
+    build_matrix(args.compiler, args.type, args.source_dir, args.build_dir, args.post_build_cmd)
 
 
-def build_matrix(compilers, build_types, source_dir, build_base_dir):
+def build_matrix(compilers, build_types, source_dir, build_base_dir, post_build_cmds):
     for compiler in compilers:
         for build_type in build_types:
             build_dir = create_dir(build_base_dir, compiler, build_type)
             run_cmake_configure(compiler, build_type, source_dir, build_dir)
             run_cmake_build(build_dir)
+            run_post_build_commands(build_dir, post_build_cmds)
 
 
 def run_cmake_configure(compiler, build_type, source_dir, build_dir):
@@ -28,6 +29,11 @@ def run_cmake_configure(compiler, build_type, source_dir, build_dir):
 def run_cmake_build(build_dir):
     cmake_build_cmd = f'cmake --build {build_dir} -j 8'
     subprocess.run(cmake_build_cmd.split(), check=True)
+
+
+def run_post_build_commands(build_dir, post_build_cmds):
+    for cmd in post_build_cmds:
+        subprocess.run(cmd.split(), cwd=build_dir, check=True)
 
 
 def get_c_compiler(compiler):
@@ -58,6 +64,7 @@ def parse_args():
     parser.add_argument('--type', nargs='+', help='list of build types')
     parser.add_argument('--source-dir', help='source directory', default='.')
     parser.add_argument('--build-dir', help='build directory', default='build')
+    parser.add_argument('--post-build-cmd', nargs='+', help='list of commands to run after build', default=[])
     return parser.parse_args()
 
 
