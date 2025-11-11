@@ -55,7 +55,7 @@ def run_cmake_build(build_dir, target, quiet):
 
 def run_post_build_commands(build_dir, post_build_cmds):
     for cmd in post_build_cmds:
-        subprocess.run(cmd.split(), cwd=build_dir, check=True)
+        subprocess.run(cmd, cwd=build_dir, check=True, shell=True)
 
 
 def get_c_compiler(compiler):
