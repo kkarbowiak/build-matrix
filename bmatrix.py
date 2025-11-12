@@ -67,6 +67,8 @@ def get_c_compiler(compiler):
         return compiler
     elif compiler.startswith('clang++'):
         return compiler.replace('clang++', 'clang')
+    else:
+        return compiler
 
 
 def get_cxx_compiler(compiler):
@@ -77,6 +79,8 @@ def get_cxx_compiler(compiler):
     elif compiler.startswith('clang'):
         return compiler.replace('clang', 'clang++')
     elif compiler.startswith('clang++'):
+        return compiler
+    else:
         return compiler
 
 
