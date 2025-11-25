@@ -11,6 +11,7 @@ class Options:
     source_dir: str
     build_dir: str
     target: str
+    build_jobs: int
     quiet: bool
     post_build_cmds: list[str]
 
@@ -32,7 +33,7 @@ def process(compiler, build_type, options):
     build_dir = create_dir(options.build_dir, compiler, build_type)
     print(f'Building with {compiler} in {build_type} mode in {build_dir} ...')
     run_cmake_configure(compiler, build_type, options.source_dir, build_dir, options.quiet)
-    run_cmake_build(build_dir, options.target, options.quiet)
+    run_cmake_build(build_dir, options.target, options.build_jobs, options.quiet)
     run_post_build_commands(build_dir, options.post_build_cmds)
 
 
@@ -45,8 +46,8 @@ def run_cmake_configure(compiler, build_type, source_dir, build_dir, quiet):
     subprocess.run(cmake_cfg_cmd.split(), check=True, stdout=redirect)
 
 
-def run_cmake_build(build_dir, target, quiet):
-    cmake_build_cmd = f'cmake --build {build_dir} -j 8'
+def run_cmake_build(build_dir, target, jobs, quiet):
+    cmake_build_cmd = f'cmake --build {build_dir} -j {jobs}'
     if target:
         cmake_build_cmd += f' --target {target}'
     redirect = subprocess.DEVNULL if quiet else None
@@ -98,6 +99,7 @@ def get_args_parser():
     parser.add_argument('--build-dir', help='build directory', default='build')
     parser.add_argument('--target', help='build target')
     parser.add_argument('--quiet', action='store_true', help='suppress configure and build output')
+    parser.add_argument('--build-jobs', type=int, help='number of parallel build jobs', default=8)
     parser.add_argument('--post-build-cmd', nargs='+', help='list of commands to run after build', default=[])
     return parser
 
@@ -110,6 +112,7 @@ def parse_args(parser):
         source_dir=args.source_dir,
         build_dir=args.build_dir,
         target=args.target,
+        build_jobs=args.build_jobs,
         quiet=args.quiet,
         post_build_cmds=args.post_build_cmd
     )
